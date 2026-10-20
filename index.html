@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bottcuaann - Premium Bio Link</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-glow: #00f2fe;
+            --secondary-glow: #4facfe;
+            --accent-purple: #7928ca;
+            --accent-pink: #ff007f;
+            --bg-dark: #040711;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+            perspective: 1000px;
+            padding: 20px 0;
+        }
+
+        /* Canvas & Mesh Grid Background */
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .cyber-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 242, 254, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 242, 254, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        /* Ambient Glow Spheres */
+        .glow-sphere-1, .glow-sphere-2, .glow-sphere-3 {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(90px);
+            z-index: 1;
+            pointer-events: none;
+            animation: floatGlow 10s infinite alternate ease-in-out;
+        }
+
+        .glow-sphere-1 {
+            width: 320px;
+            height: 320px;
+            background: radial-gradient(circle, rgba(0, 242, 254, 0.3), transparent 70%);
+            top: 10%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .glow-sphere-2 {
+            width: 380px;
+            height: 380px;
+            background: radial-gradient(circle, rgba(121, 40, 202, 0.3), transparent 70%);
+            bottom: 5%;
+            left: 50%;
+            transform: translate(-50%, 0);
+            animation-delay: -5s;
+        }
+
+        .glow-sphere-3 {
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, rgba(255, 0, 127, 0.2), transparent 70%);
+            top: 45%;
+            left: 20%;
+            animation-delay: -2s;
+        }
+
+        @keyframes floatGlow {
+            0% { transform: translate(-50%, -50%) scale(0.85); opacity: 0.5; }
+            100% { transform: translate(-50%, -40%) scale(1.25); opacity: 0.9; }
+        }
+
+        /* Container Card Glassmorphism Ultra */
+        .container {
+            width: 100%;
+            max-width: 420px;
+            padding: 32px 24px;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(10, 16, 32, 0.65);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            border-radius: 28px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 
+                        inset 0 0 25px rgba(0, 242, 254, 0.1);
+            transform-style: preserve-3d;
+            transition: transform 0.15s ease-out;
+            margin: 20px 16px;
+        }
+
+        /* Avatar Holographic Glow Ring */
+        .profile-img-box {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin-bottom: 20px;
+        }
+
+        .profile-img-box::before {
+            content: '';
+            position: absolute;
+            inset: -6px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #00f2fe, #ff007f, #7928ca, #00f2fe);
+            background-size: 300% 300%;
+            animation: ringGlow 6s linear infinite;
+            filter: blur(10px);
+            opacity: 0.9;
+        }
+
+        @keyframes ringGlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .profile-img {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #0a1020;
+            z-index: 2;
+        }
+
+        /* Title & Badge */
+        .title-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 242, 254, 0.12);
+            border: 1px solid rgba(0, 242, 254, 0.4);
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--primary-glow);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
+        }
+
+        .title {
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            text-align: center;
+            background: linear-gradient(135deg, #ffffff 30%, #00f2fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+            filter: drop-shadow(0 0 14px rgba(0, 242, 254, 0.5));
+        }
+
+        .description {
+            font-size: 13.5px;
+            text-align: center;
+            color: #94a3b8;
+            line-height: 1.6;
+            margin-bottom: 26px;
+            background: rgba(15, 23, 42, 0.7);
+            padding: 14px 18px;
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        .description b {
+            color: #00f2fe;
+            font-weight: 800;
+        }
+
+        /* Links List */
+        .links-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Ultra Elastic / Bounce Button */
+        .btn-link {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(13, 22, 45, 0.8);
+            border: 1.5px solid rgba(0, 242, 254, 0.35);
+            border-radius: 20px;
+            color: #ffffff;
+            text-decoration: none;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), 
+                        inset 0 1px 1px rgba(255, 255, 255, 0.2);
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            overflow: hidden;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Highlight khusus untuk JJ Penarikan */
+        .btn-link.highlight {
+            border-color: rgba(255, 0, 127, 0.6);
+            background: rgba(25, 15, 45, 0.85);
+            animation: pulseGlow 3s infinite alternate;
+        }
+
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 15px rgba(255, 0, 127, 0.3), inset 0 0 10px rgba(255, 0, 127, 0.2); }
+            100% { box-shadow: 0 0 25px rgba(0, 242, 254, 0.6), inset 0 0 15px rgba(0, 242, 254, 0.4); }
+        }
+
+        /* Tag Label Kecil untuk Efek Menarik */
+        .badge-hot {
+            position: absolute;
+            top: 6px;
+            right: 48px;
+            background: linear-gradient(45deg, #ff007f, #7928ca);
+            color: #fff;
+            font-size: 8.5px;
+            font-weight: 900;
+            padding: 2px 7px;
+            border-radius: 10px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            box-shadow: 0 0 8px rgba(255, 0, 127, 0.8);
+        }
+
+        /* Light Beam Sweep Effect */
+        .btn-link::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -100%;
+            width: 60%;
+            height: 200%;
+            background: linear-gradient(
+                90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.4), 
+                transparent
+            );
+            transform: rotate(25deg);
+            transition: left 0.75s ease;
+        }
+
+        .btn-link:hover::before {
+            left: 150%;
+        }
+
+        /* Hover & Focus */
+        .btn-link:hover {
+            transform: translateY(-4px) scale(1.03);
+            border-color: var(--primary-glow);
+            box-shadow: 0 14px 35px rgba(0, 242, 254, 0.5), 
+                        inset 0 0 15px rgba(0, 242, 254, 0.3);
+            background: rgba(0, 242, 254, 0.15);
+        }
+
+        .btn-link.highlight:hover {
+            border-color: #ff007f;
+            box-shadow: 0 14px 35px rgba(255, 0, 127, 0.6), 
+                        inset 0 0 15px rgba(255, 0, 127, 0.3);
+            background: rgba(255, 0, 127, 0.15);
+        }
+
+        /* Click/Pencet State */
+        .btn-link:active {
+            transform: scale(1.08);
+            box-shadow: 0 0 40px rgba(0, 242, 254, 0.9);
+            border-color: #ffffff;
+            transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .btn-icon-wrapper {
+            position: relative;
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1.5px solid rgba(0, 242, 254, 0.5);
+            flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-link.highlight .btn-icon-wrapper {
+            border-color: rgba(255, 0, 127, 0.7);
+        }
+
+        .btn-icon {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .btn-text {
+            flex-grow: 1;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+            color: #ffffff;
+            padding: 0 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+        }
+
+        .btn-arrow-box {
+            width: 32px;
+            height: 32px;
+            background: rgba(0, 242, 254, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .btn-link.highlight .btn-arrow-box {
+            background: rgba(255, 0, 127, 0.15);
+            border-color: rgba(255, 0, 127, 0.4);
+        }
+
+        .btn-arrow {
+            font-size: 14px;
+            color: var(--primary-glow);
+            transition: transform 0.3s ease;
+        }
+
+        .btn-link.highlight .btn-arrow {
+            color: #ff007f;
+        }
+
+        .btn-link:hover .btn-arrow-box {
+            background: var(--primary-glow);
+            box-shadow: 0 0 12px var(--primary-glow);
+        }
+
+        .btn-link.highlight:hover .btn-arrow-box {
+            background: #ff007f;
+            box-shadow: 0 0 12px #ff007f;
+        }
+
+        .btn-link:hover .btn-arrow {
+            color: #040711;
+            transform: translateX(3px);
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 30px;
+            font-size: 11.5px;
+            color: #64748b;
+            text-align: center;
+        }
+
+        .footer a {
+            color: var(--primary-glow);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .footer a:hover {
+            color: #ffffff;
+            text-shadow: 0 0 8px var(--primary-glow);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Cyber Matrix Grid Background -->
+    <div class="cyber-grid"></div>
+
+    <!-- Glowing Ambient Orbs -->
+    <div class="glow-sphere-1"></div>
+    <div class="glow-sphere-2"></div>
+    <div class="glow-sphere-3"></div>
+
+    <!-- Particle Canvas -->
+    <canvas id="bgCanvas"></canvas>
+
+    <!-- Main Glass Card Container (3D Tilt Ready) -->
+    <div class="container" id="tiltContainer">
+        
+        <!-- Profile Picture dengan Glow Ring -->
+        <div class="profile-img-box">
+            <img src="https://files.catbox.moe/p29oou.jpg" alt="Bottcuaann Logo" class="profile-img">
+        </div>
+
+        <div class="title-badge">VERIFIED BOT BOTGMAIL</div>
+        <h1 class="title">Bottcuaann</h1>
+        <p class="description">
+            📢 Freelance Gmail ini <b>GRATIS</b>, tanpa biaya apa pun. Cukup modal HP dan bikin akun Gmail, lalu kalian akan mendapatkan bayaran.
+        </p>
+
+        <!-- List Link / 4 Tombol Utama -->
+        <div class="links-container">          
+            
+            <!-- Link 1: Telegram Bot Stor Gmail -->
+            <a href="https://telegram.me/KirimGmailBot?start=7856323152" target="_blank" class="btn-link">
+                <div class="btn-icon-wrapper">
+                    <img src="https://files.catbox.moe/p29oou.jpg" alt="Gmail Icon" class="btn-icon">
+                </div>
+                <span class="btn-text">Stor 10 gmail = Rp50.000</span>
+                <div class="btn-arrow-box">
+                    <span class="btn-arrow">➔</span>
+                </div>
+            </a>
+
+            <!-- Link 2: Video Tutorial Lengkap -->
+            <a href="https://files.catbox.moe/bkd4uf.mp4" target="_blank" class="btn-link">
+                <div class="btn-icon-wrapper">
+                    <img src="https://files.catbox.moe/p29oou.jpg" alt="Tutorial Icon" class="btn-icon">
+                </div>
+                <span class="btn-text">Tutorial Lengkap</span>
+                <div class="btn-arrow-box">
+                    <span class="btn-arrow">➔</span>
+                </div>
+            </a>
+
+            <!-- Link 3: JJ PENARIKAN (PP Sama dengan Tutorial Lengkap + Efek Highlight) -->
+            <a href="https://files.catbox.moe/wgsjwl.mp4" target="_blank" class="btn-link highlight">
+                <span class="badge-hot">🔥 PROOF</span>
+                <div class="btn-icon-wrapper">
+                    <img src="https://files.catbox.moe/p29oou.jpg" alt="JJ Penarikan Icon" class="btn-icon">
+                </div>
+                <span class="btn-text">JJ PENARIKAN</span>
+                <div class="btn-arrow-box">
+                    <span class="btn-arrow">➔</span>
+                </div>
+            </a>
+
+            <!-- Link 4: Telegram Admin / Kontak Admin -->
+            <a href="https://t.me/derrxd" target="_blank" class="btn-link">
+                <div class="btn-icon-wrapper">
+                    <img src="https://files.catbox.moe/59vuky.jpg" alt="Admin Icon" class="btn-icon">
+                </div>
+                <span class="btn-text">Hubungi Admin</span>
+                <div class="btn-arrow-box">
+                    <span class="btn-arrow">➔</span>
+                </div>
+            </a>
+
+        </div>
+
+        <!-- Footer Info -->
+        <div class="footer">
+            <p>Bergabung dengan botgmail</p>
+            <p style="margin-top: 8px;">
+                <a href="#">Privacy Policy</a> • <a href="#">Report</a> • <a href="#">Terms of Service</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Script Animasi Background & 3D Tilt Card -->
+    <script>
+        /* =========================================
+           1. CANVAS PARTICLE & NEBULA BACKGROUND
+           ========================================= */
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        let mouse = { x: null, y: null, radius: 160 };
+
+        function initCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', initCanvas);
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.x;
+            mouse.y = e.y;
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 0) {
+                mouse.x = e.touches[0].clientX;
+                mouse.y = e.touches[0].clientY;
+            }
+        });
+
+        window.addEventListener('mouseleave', () => {
+            mouse.x = null;
+            mouse.y = null;
+        });
+
+        initCanvas();
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.radius = Math.random() * 2.2 + 0.8;
+                this.vx = (Math.random() - 0.5) * 1.5;
+                this.vy = (Math.random() - 0.5) * 1.5;
+                const colors = ['#00f2fe', '#7928ca', '#ff007f'];
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+
+                // Tolakan Partikel terhadap Kursor / Sentuhan
+                if (mouse.x && mouse.y) {
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let dist = Math.hypot(dx, dy);
+                    if (dist < mouse.radius) {
+                        let force = (mouse.radius - dist) / mouse.radius;
+                        this.x -= (dx / dist) * force * 4;
+                        this.y -= (dy / dist) * force * 4;
+                    }
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+            }
+        }
+
+        const particles = Array.from({ length: 70 }, () => new Particle());
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+
+                for (let j = i + 1; j < particles.length; j++) {
+                    let dx = particles[i].x - particles[j].x;
+                    let dy = particles[i].y - particles[j].y;
+                    let dist = Math.hypot(dx, dy);
+
+                    if (dist < 110) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(0, 242, 254, ${1 - dist / 110})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        /* =========================================
+           2. 3D CARD TILT EFFECT (Mouse / Hover)
+           ========================================= */
+        const tiltContainer = document.getElementById('tiltContainer');
+
+        document.addEventListener('mousemove', (e) => {
+            if (window.innerWidth < 768) return; // Khusus layar desktop / tablet
+            const xAxis = (window.innerWidth / 2 - e.pageX) / 25;
+            const yAxis = (window.innerHeight / 2 - e.pageY) / 25;
+            tiltContainer.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+        });
+
+        document.addEventListener('mouseleave', () => {
+            tiltContainer.style.transform = `rotateY(0deg) rotateX(0deg)`;
+        });
+    </script>
+</body>
+</html>
